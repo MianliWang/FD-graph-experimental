@@ -7,6 +7,9 @@ This repository is not claiming a new algorithmic result. The goal is to make
 the ideas concrete with readable code, focused tests, and short notes suitable
 for discussion or teaching.
 
+For a compact professor-facing overview, see
+[docs/professor_note.md](docs/professor_note.md).
+
 ## Core question
 
 Can candidate-key discovery be understood as finding an inclusion-minimal
