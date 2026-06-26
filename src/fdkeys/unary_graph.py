@@ -4,6 +4,7 @@ from collections.abc import Iterable, Mapping
 from itertools import product
 
 from fdkeys.model import FD
+from fdkeys.validation import validate_universe
 
 
 def is_unary_fds(fds: Iterable[FD]) -> bool:
@@ -32,11 +33,13 @@ def find_candidate_keys_unary_scc(
 ) -> list[frozenset[str]]:
     """Find candidate keys for unary FDs using source SCCs."""
 
+    universe_set = frozenset(universe)
     rules = tuple(fds)
+    validate_universe(universe_set, rules)
     if not is_unary_fds(rules):
         raise ValueError("unary SCC reasoning requires singleton LHS FDs")
 
-    graph = build_unary_graph(universe, rules)
+    graph = build_unary_graph(universe_set, rules)
     components = _strongly_connected_components(graph)
     component_index = {
         attr: index for index, component in enumerate(components) for attr in component

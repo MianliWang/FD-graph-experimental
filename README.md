@@ -16,6 +16,9 @@ attributes in the schema?
 In this repo, a candidate key is treated as a minimal seed set `K` such that
 `closure(K, fds)` contains the whole universe of attributes.
 
+Universe-aware public functions validate that FDs, and proposed key attributes
+where applicable, mention only attributes in the declared universe.
+
 ## Why general FDs are not ordinary graph reachability
 
 For a dependency such as `AB -> C`, both `A` and `B` are required together.

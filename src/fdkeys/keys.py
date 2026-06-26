@@ -5,13 +5,18 @@ from itertools import combinations
 
 from fdkeys.closure import closure
 from fdkeys.model import FD
+from fdkeys.validation import validate_attrs_subset, validate_universe
 
 
 def is_superkey(universe: Iterable[str], fds: Iterable[FD], attrs: Iterable[str]) -> bool:
     """Return whether attrs determines exactly the schema universe."""
 
     universe_set = frozenset(universe)
-    return closure(attrs, tuple(fds)) == universe_set
+    rules = tuple(fds)
+    attrs_set = frozenset(attrs)
+    validate_universe(universe_set, rules)
+    validate_attrs_subset(universe_set, attrs_set)
+    return closure(attrs_set, rules) == universe_set
 
 
 def is_candidate_key(
@@ -23,13 +28,13 @@ def is_candidate_key(
     attrs_set = frozenset(attrs)
     rules = tuple(fds)
 
-    if not attrs_set <= universe_set:
-        return False
-    if not is_superkey(universe_set, rules, attrs_set):
+    validate_universe(universe_set, rules)
+    validate_attrs_subset(universe_set, attrs_set)
+    if closure(attrs_set, rules) != universe_set:
         return False
 
     return all(
-        not is_superkey(universe_set, rules, attrs_set - {attr})
+        closure(attrs_set - {attr}, rules) != universe_set
         for attr in attrs_set
     )
 
@@ -41,6 +46,7 @@ def find_candidate_keys(
 
     universe_set = frozenset(universe)
     rules = tuple(fds)
+    validate_universe(universe_set, rules)
     rhs_attrs = {fd.rhs for fd in rules}
     mandatory = universe_set - rhs_attrs
     optional = sorted(universe_set - mandatory)
