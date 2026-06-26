@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fd-key-graph-experiments"
+version = "0.1.0"
+description = "Small experiments with functional dependencies, candidate keys, and graph interpretations."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Mianli Wang" }
+]
+dependencies = []
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.0"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
