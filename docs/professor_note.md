@@ -6,9 +6,10 @@ Can candidate keys be viewed as inclusion-minimal seed sets whose FD closure
 derives all attributes?
 
 In this repository, a schema is represented by a universe of attribute names
-and a set of single-RHS functional dependencies. A set of attributes is a
-superkey when its FD closure contains the whole universe. A candidate key is a
-superkey with no proper subset that is also a superkey.
+and a set of general single-RHS functional dependencies. The left-hand side can
+contain one, two, or more attributes. A set of attributes is a superkey when
+its FD closure contains the whole universe. A candidate key is a superkey with
+no proper subset that is also a superkey.
 
 ## Baseline Algorithm
 
@@ -45,6 +46,20 @@ return keys
 The `mandatory` step reflects the fact that attributes which never appear on
 the right-hand side of an FD cannot be derived from other attributes.
 
+The code also includes `find_candidate_keys_pruned`, a teaching-oriented
+improvement over the baseline enumeration. It does a depth-first search from
+the mandatory attributes, computes FD closure at each search node, skips any
+candidate that already contains a known key, and does not add attributes that
+are already derivable from the current seed set. This is still exponential in
+the worst case, but it avoids some clearly unnecessary branches while returning
+the same candidate keys.
+
+The repository also has a small `synthesize_3nf` helper. It computes a
+canonical-cover-style FD set, creates one relation per determinant, removes
+subsumed relations, and adds a candidate-key relation if needed. This is meant
+as a compact teaching version of 3NF synthesis, not as a complete physical
+database design tool.
+
 ## Why Ordinary Graphs Are Not Enough
 
 The dependency `AB -> C` has AND-semantics: both `A` and `B` must be available
@@ -52,13 +67,15 @@ before `C` can be derived. Replacing it with ordinary directed edges `A -> C`
 and `B -> C` would be unsound, because then `A` alone or `B` alone would appear
 to determine `C`.
 
-For general FDs, it is more accurate to think in terms of Horn rules or
-directed hypergraph edges, where a set of prerequisites derives one attribute.
+For general FDs, which are the main focus here, it is more accurate to think
+in terms of Horn rules or directed hypergraph edges, where a set of
+prerequisites derives one attribute.
 
 ## Unary FD Special Case
 
 If every FD has a singleton left-hand side, such as `A -> B`, then FD closure
-does collapse to ordinary graph reachability.
+does collapse to ordinary graph reachability. This is a useful special case,
+not the central model for general FDs.
 
 In that unary FD case, each FD is a directed edge. Strongly connected
 components identify groups of attributes that mutually determine each other.

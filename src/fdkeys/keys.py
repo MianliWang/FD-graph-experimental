@@ -61,3 +61,40 @@ def find_candidate_keys(
                 keys.append(candidate)
 
     return keys
+
+
+def find_candidate_keys_pruned(
+    universe: Iterable[str], fds: Iterable[FD]
+) -> list[frozenset[str]]:
+    """Find candidate keys with closure-based DFS pruning.
+
+    This is still an exhaustive search in the worst case, but it avoids adding
+    attributes that are already derivable from the current seed set.
+    """
+
+    universe_set = frozenset(universe)
+    rules = tuple(fds)
+    validate_universe(universe_set, rules)
+    rhs_attrs = {fd.rhs for fd in rules}
+    mandatory = universe_set - rhs_attrs
+    optional = tuple(sorted(universe_set - mandatory))
+
+    keys: list[frozenset[str]] = []
+
+    def visit(candidate: frozenset[str], remaining: tuple[str, ...]) -> None:
+        if any(key <= candidate for key in keys):
+            return
+
+        known = closure(candidate, rules)
+        if known == universe_set:
+            keys[:] = [key for key in keys if not candidate < key]
+            keys.append(candidate)
+            return
+
+        for index, attr in enumerate(remaining):
+            if attr in known:
+                continue
+            visit(candidate | frozenset({attr}), remaining[index + 1 :])
+
+    visit(mandatory, optional)
+    return sorted(keys, key=lambda key: (len(key), tuple(sorted(key))))
